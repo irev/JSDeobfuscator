@@ -1,5 +1,5 @@
 {
-  "name": "DFIR JS-Deobfuscator (r3xdev Edition)",
-  "description": "A professional-grade tool for Digital Forensics and Incident Response (DFIR) analysts to stabilize, decode, and analyze obfuscated JavaScript, specifically targeting r3xdev-style string pool rotations.",
+  "name": "Professional DFIR JS-Deobfuscator",
+  "description": "A high-end Digital Forensics and Incident Response tool for analyzing, decompiling, and extracting intelligence from advanced obfuscated JavaScript payloads.",
   "requestFramePermissions": []
 }

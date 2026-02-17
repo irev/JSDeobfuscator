@@ -1,10 +1,11 @@
 
 export enum DeobfuscationStep {
   STABILIZE = 'STABILIZE',
-  HEX_DECODE = 'HEX_DECODE',
-  VM_LIFTING = 'VM_LIFTING',
-  STRING_RESOLVE = 'STRING_RESOLVE',
-  CLEANUP = 'CLEANUP',
+  LITERAL_DECODE = 'LITERAL_DECODE',
+  DECOMPILE = 'DECOMPILE',
+  REFERENCE_RESOLVE = 'REFERENCE_RESOLVE',
+  SEMANTIC_CLEANUP = 'SEMANTIC_CLEANUP',
+  REFINE = 'REFINE',
   ANALYZE = 'ANALYZE'
 }
 
@@ -16,10 +17,18 @@ export interface TransformationResult {
   timestamp: number;
 }
 
+export interface DetectionRule {
+  type: 'YARA' | 'Sigma';
+  content: string;
+  description: string;
+}
+
 export interface AnalysisSummary {
   attackVector: string;
   impacts: string[];
-  ioCs: { type: string; value: string }[];
-  flowDescription: string;
+  ioCs: { type: string; value: string; context?: string }[];
+  flowDescription: string[];
   threatLevel: 'low' | 'medium' | 'high' | 'critical';
+  detectionRules: DetectionRule[];
+  remediationSteps: string[];
 }

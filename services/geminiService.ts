@@ -6,55 +6,70 @@ export class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // Fix: Use process.env.API_KEY directly without fallback as per @google/genai guidelines
+    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
-  async processStep(step: DeobfuscationStep, code: string, context?: string): Promise<string> {
+  async processStep(step: DeobfuscationStep, code: string): Promise<string> {
     const modelName = 'gemini-3-pro-preview';
     let prompt = '';
 
     switch (step) {
-      case DeobfuscationStep.VM_LIFTING:
-        prompt = `You are a Senior Malware Researcher. The provided JavaScript code is an obfuscated Virtual Machine (VM). 
-        1. Identify the 'bytecode' array (usually a large array of base64 strings or numbers).
-        2. Identify the 'interpreter' loop and the 'opcode' mapping.
-        3. DECOMPILE the bytecode back into human-readable ES6 logic. 
-        4. Do NOT return the interpreter code. Return ONLY the decompiled logic.
-        
-        CODE TO ANALYZE:
-        ${code}`;
-        break;
-
-      case DeobfuscationStep.STRING_RESOLVE:
-        prompt = `Analyze this code and replace all string pool lookups (e.g., ax[0x12], S['30'], or resolver functions) with their literal string values. 
-        Calculate any simple arithmetic offsets used for indexing. 
-        Return ONLY the updated ES6 code.
+      case DeobfuscationStep.DECOMPILE:
+        prompt = `You are a World-Class Reverse Engineer. 
+        TASK: DE-VIRTUALIZE AND DECOMPILE.
+        The provided JavaScript is likely a Virtual Machine (VM) or complex interpreter-based obfuscation.
+        1. Identify the bytecode array, the dispatcher, and the instruction set.
+        2. Translate the operations back into human-readable high-level JavaScript logic.
+        3. Remove the entire VM infrastructure.
+        4. Focus on recovering the core intent (exfiltration, harvesting, etc.).
         
         CODE:
         ${code}`;
         break;
 
-      case DeobfuscationStep.CLEANUP:
-        prompt = `Refactor the following decompiled JavaScript to make it professional and readable:
-        1. Rename variables from obfuscated names (a1, _0xabc) to meaningful names based on their usage (e.g., 'sendToTelegram', 'getCookie', 'victimIP').
-        2. Ensure all logic blocks are clear and use modern ES6 (async/await, arrow functions).
-        3. Remove any remaining 'anti-debug' or 'dead code'.
-        4. If you see Telegram Bot API calls or Phishing logic, highlight the flow clearly.
+      case DeobfuscationStep.REFERENCE_RESOLVE:
+        prompt = `Analyze the JavaScript code for proxy functions, string pools, and property masking.
+        1. Inline all calculated string references.
+        2. Resolve constant folding.
+        3. Replace indirect function calls with their direct counterparts.
+        Return ONLY the resolved ES6 code.
         
-        Return ONLY the clean ES6 code.
+        CODE:
+        ${code}`;
+        break;
+
+      case DeobfuscationStep.SEMANTIC_CLEANUP:
+        prompt = `Perform a semantic refactor of this deobfuscated JavaScript:
+        1. Identify the purpose of every function and variable.
+        2. Rename them to descriptive names (e.g., 'sendCredentialsToTelegram', 'targetURL').
+        3. Standardize the code structure using clean ES6+.
+        Return ONLY the clean refactored code.
+        
+        CODE:
+        ${code}`;
+        break;
+
+      case DeobfuscationStep.REFINE:
+        prompt = `Final Polish for Forensic Review.
+        1. Simplify control flows.
+        2. Refine variable names based on technical flow.
+        3. Ensure specific malicious endpoints (e.g., Telegram Bot API) are clearly visible and commented.
         
         CODE:
         ${code}`;
         break;
 
       case DeobfuscationStep.ANALYZE:
-        prompt = `Analyze this finalized deobfuscated JavaScript for Digital Forensics (DFIR).
-        Produce a JSON report with:
-        - attackVector: Summarize how the attack works.
-        - impacts: List what the script steals or modifies.
-        - ioCs: Extract URLs, IPs, API Tokens, or Domain names.
-        - flowDescription: A step-by-step technical reconstruction of the execution.
-        - threatLevel: "low", "medium", "high", or "critical".
+        prompt = `Perform a Digital Forensics (DFIR) analysis on this deobfuscated script.
+        Produce a JSON response with these exact keys:
+        - attackVector (string): Technical summary.
+        - impacts (string array): List of harmful activities.
+        - ioCs (array of {type, value, context}): Indicators with context.
+        - flowDescription (string array): Ordered steps of execution.
+        - threatLevel (string): "low", "medium", "high", or "critical".
+        - detectionRules (array of {type: "YARA"|"Sigma", content: string, description: string}): Generate specific YARA/Sigma rules to detect THIS specific variant.
+        - remediationSteps (string array): Steps for incident responders.
 
         CODE:
         ${code}`;
@@ -64,12 +79,48 @@ export class GeminiService {
         return code;
     }
 
+    // Fix: Use responseSchema for the ANALYZE step to ensure high-quality JSON output
     const response = await this.ai.models.generateContent({
       model: modelName,
       contents: prompt,
       config: {
-        thinkingConfig: { thinkingBudget: 8192 }, // High budget for bytecode lifting
-        responseMimeType: step === DeobfuscationStep.ANALYZE ? "application/json" : "text/plain"
+        thinkingConfig: { thinkingBudget: 8192 },
+        responseMimeType: step === DeobfuscationStep.ANALYZE ? "application/json" : "text/plain",
+        responseSchema: step === DeobfuscationStep.ANALYZE ? {
+          type: Type.OBJECT,
+          properties: {
+            attackVector: { type: Type.STRING },
+            impacts: { type: Type.ARRAY, items: { type: Type.STRING } },
+            ioCs: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  type: { type: Type.STRING },
+                  value: { type: Type.STRING },
+                  context: { type: Type.STRING }
+                },
+                required: ["type", "value"]
+              }
+            },
+            flowDescription: { type: Type.ARRAY, items: { type: Type.STRING } },
+            threatLevel: { type: Type.STRING },
+            detectionRules: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  type: { type: Type.STRING },
+                  content: { type: Type.STRING },
+                  description: { type: Type.STRING }
+                },
+                required: ["type", "content", "description"]
+              }
+            },
+            remediationSteps: { type: Type.ARRAY, items: { type: Type.STRING } }
+          },
+          required: ["attackVector", "impacts", "ioCs", "flowDescription", "threatLevel", "detectionRules", "remediationSteps"]
+        } : undefined
       }
     });
 
