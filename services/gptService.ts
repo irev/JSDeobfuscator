@@ -21,15 +21,28 @@ export class GptService implements AIService {
       body: JSON.stringify({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: "You are an expert Malware Analyst and Reverse Engineer." },
+          { role: "system", content: "You are an automated forensic deobfuscator. Your output must be deterministic and strictly follow instructions." },
           { role: "user", content: STEP_PROMPTS[step](code) }
         ],
         response_format: step === DeobfuscationStep.ANALYZE ? { type: "json_object" } : { type: "text" },
-        temperature: 0.1
+        // Set temperature to 0 for maximum determinism
+        temperature: 0,
+        top_p: 1
       })
     });
 
     const data = await response.json();
-    return data.choices[0].message.content || '';
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+    
+    let text = data.choices[0].message.content || '';
+    
+    // Cleanup markdown wrapping for non-JSON steps
+    if (step !== DeobfuscationStep.ANALYZE) {
+      text = text.replace(/```javascript/g, '').replace(/```js/g, '').replace(/```/g, '').trim();
+    }
+    
+    return text;
   }
 }

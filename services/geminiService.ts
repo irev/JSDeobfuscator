@@ -23,6 +23,8 @@ export class GeminiService implements AIService {
       model: this.model,
       contents: prompt,
       config: {
+        // Set temperature to 0 for maximum determinism
+        temperature: 0,
         thinkingConfig: this.model.includes('pro') ? { thinkingBudget: 8192 } : undefined,
         responseMimeType: step === DeobfuscationStep.ANALYZE ? "application/json" : "text/plain",
         responseSchema: step === DeobfuscationStep.ANALYZE ? {
@@ -63,6 +65,12 @@ export class GeminiService implements AIService {
       }
     });
 
-    return response.text || '';
+    // Handle possible markdown blocks in text-only output
+    let text = response.text || '';
+    if (step !== DeobfuscationStep.ANALYZE) {
+      text = text.replace(/```javascript/g, '').replace(/```js/g, '').replace(/```/g, '').trim();
+    }
+    
+    return text;
   }
 }

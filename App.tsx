@@ -33,7 +33,8 @@ import {
   BookOpen,
   X,
   Info,
-  ExternalLink
+  ExternalLink,
+  Target
 } from 'lucide-react';
 
 const EXAMPLE_PAYLOAD = `(function(_0x1b2c, _0x3d4e) {
@@ -79,13 +80,13 @@ const App: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const steps = [
-    { type: DeobfuscationStep.STABILIZE, label: 'Normalize Structure' },
-    { type: DeobfuscationStep.LITERAL_DECODE, label: 'Static Literal Decoding' },
-    { type: DeobfuscationStep.DECOMPILE, label: 'De-Virtualization Phase' },
-    { type: DeobfuscationStep.REFERENCE_RESOLVE, label: 'Constant & Ref Inlining' },
-    { type: DeobfuscationStep.SEMANTIC_CLEANUP, label: 'Semantic Reconstruction' },
-    { type: DeobfuscationStep.REFINE, label: 'Logic Polish' },
-    { type: DeobfuscationStep.ANALYZE, label: 'Forensic Intelligence' }
+    { type: DeobfuscationStep.STABILIZE, label: '01 | Structural Stabilization' },
+    { type: DeobfuscationStep.LITERAL_DECODE, label: '02 | Literal Expansion' },
+    { type: DeobfuscationStep.DECOMPILE, label: '03 | VM Opcode Recovery' },
+    { type: DeobfuscationStep.REFERENCE_RESOLVE, label: '04 | Deterministic Inlining' },
+    { type: DeobfuscationStep.SEMANTIC_CLEANUP, label: '05 | Evidence Reconstruction' },
+    { type: DeobfuscationStep.REFINE, label: '06 | Forensic Annotation' },
+    { type: DeobfuscationStep.ANALYZE, label: '07 | Intelligence Dissection' }
   ];
 
   const handleAISelect = (id: string) => {
@@ -150,14 +151,14 @@ const App: React.FC = () => {
 
         if (step.type === DeobfuscationStep.STABILIZE) {
           result = stabilizeCode(workingCode);
-          description = 'Normalization complete.';
+          description = 'Normalizing structure... OK.';
         } else if (step.type === DeobfuscationStep.LITERAL_DECODE) {
           let decoded = decodeHexEscapes(workingCode);
           result = resolveArrayRotations(decoded);
-          description = 'Rotations reversed & literals decoded.';
+          description = 'Static pool expansion... OK.';
         } else {
           result = await currentService.processStep(step.type, workingCode);
-          description = `[${currentService.name}] ${step.label} complete.`;
+          description = `[DET-KRNL] Phase ${i + 1} finalized.`;
         }
 
         if (step.type === DeobfuscationStep.ANALYZE) {
@@ -188,7 +189,7 @@ const App: React.FC = () => {
         setHistory(prev => [...prev, {
           step: step.type,
           content: workingCode,
-          description: `Error: ${(error as Error).message}`,
+          description: `TERMINATED: ${(error as Error).message}`,
           status: 'error',
           timestamp: Date.now()
         }]);
@@ -206,7 +207,7 @@ const App: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `forensic_recovery_${Date.now()}.js`;
+    a.download = `recovered_artifact_${Date.now()}.js`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -229,11 +230,11 @@ const App: React.FC = () => {
       <nav className="h-14 border-b border-white/5 bg-[#0d0d0f] flex items-center px-6 justify-between sticky top-0 z-50 print:hidden shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-transform hover:scale-105">
-            <ShieldAlert className="w-5 h-5 text-white" />
+            <Target className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold tracking-tighter text-white text-lg leading-none italic uppercase">DFIR <span className="text-blue-500 font-black">Labs</span></span>
-            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mt-1">Laboratory Intel System</span>
+            <span className="font-bold tracking-tighter text-white text-lg leading-none italic uppercase">DFIR <span className="text-blue-500 font-black">Kernel</span></span>
+            <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest mt-1">Professional Forensic Tooling</span>
           </div>
         </div>
 
@@ -285,14 +286,14 @@ const App: React.FC = () => {
               onClick={() => setViewMode('editor')}
               className={`px-3 py-1 text-xs rounded transition-all flex items-center gap-2 ${viewMode === 'editor' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
             >
-              <Code2 className="w-3.5 h-3.5" /> Lab
+              <Code2 className="w-3.5 h-3.5" /> Workspace
             </button>
             <button 
               disabled={!analysis}
               onClick={() => setViewMode('report')}
               className={`px-3 py-1 text-xs rounded transition-all flex items-center gap-2 ${!analysis ? 'opacity-20 cursor-not-allowed' : viewMode === 'report' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
             >
-              <FileText className="w-3.5 h-3.5" /> Intelligence
+              <FileText className="w-3.5 h-3.5" /> Intel Report
             </button>
           </div>
           
@@ -304,7 +305,7 @@ const App: React.FC = () => {
             }`}
           >
             {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-            {isProcessing ? 'INSPECTING...' : 'RUN FORENSICS'}
+            {isProcessing ? 'PROCESSING...' : 'EXECUTE PIPELINE'}
           </button>
         </div>
       </nav>
@@ -315,7 +316,7 @@ const App: React.FC = () => {
         <aside className="w-72 border-r border-white/5 bg-[#0d0d0f] flex flex-col shrink-0 print:hidden overflow-hidden">
           <div className="p-4 border-b border-white/5 flex items-center justify-between shrink-0">
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
-              <Workflow className="w-3.5 h-3.5 text-blue-500" /> Operational Flow
+              <Workflow className="w-3.5 h-3.5 text-blue-500" /> Det. Pipeline
             </h2>
             <button 
               onClick={() => { setHistory([]); setInputCode(''); setAnalysis(null); setViewMode('editor'); }} 
@@ -344,10 +345,10 @@ const App: React.FC = () => {
                     {isCompleted ? <CheckCircle2 className="w-2.5 h-2.5" /> : <span className="text-[9px] font-bold">{idx + 1}</span>}
                   </div>
                   <h3 className={`text-[11px] font-bold uppercase tracking-wide ${isActive ? 'text-blue-400' : isCompleted ? 'text-slate-200' : 'text-slate-600'}`}>
-                    {step.label}
+                    {step.label.split('|')[1].trim()}
                   </h3>
                   <p className="text-[9px] text-slate-500 mt-1 leading-tight">
-                    {isActive ? 'Processing segments...' : isCompleted ? 'Verification Successful' : 'Awaiting upstream'}
+                    {isActive ? 'Processing deterministic segments...' : isCompleted ? 'Verification OK' : 'Awaiting phase ingestion'}
                   </p>
                 </div>
               );
@@ -368,7 +369,7 @@ const App: React.FC = () => {
                 onClick={() => fileInputRef.current?.click()}
                 className="py-2 bg-white/5 border border-white/10 rounded text-[10px] font-bold text-slate-400 hover:bg-white/10 transition-all flex items-center justify-center gap-2"
               >
-                <Upload className="w-3 h-3 text-blue-400" /> Upload
+                <Upload className="w-3 h-3 text-blue-400" /> Artifact
               </button>
               <button 
                 onClick={loadExample}
@@ -384,13 +385,13 @@ const App: React.FC = () => {
                   onClick={copyCode}
                   className="w-full py-2 bg-purple-600/20 border border-purple-500/30 rounded text-[10px] font-bold text-purple-400 hover:bg-purple-600/30 transition-all flex items-center justify-center gap-2"
                 >
-                  <Sparkles className="w-3 h-3" /> Enhance Output
+                  <Sparkles className="w-3 h-3" /> Re-Iterate
                 </button>
                 <button 
                   onClick={downloadResult}
                   className="w-full py-2 bg-blue-600/20 border border-blue-500/30 rounded text-[10px] font-bold text-blue-400 hover:bg-blue-600/30 transition-all flex items-center justify-center gap-2"
                 >
-                  <Download className="w-3 h-3" /> Download Source
+                  <Download className="w-3 h-3" /> Export Code
                 </button>
               </>
             )}
@@ -401,9 +402,9 @@ const App: React.FC = () => {
         <main className="flex-1 bg-[#050507] relative overflow-hidden print:bg-white print:overflow-visible print:static">
           {viewMode === 'editor' ? (
             <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/5 print:hidden">
-              <CodeEditor label="Primary Ingestion" value={inputCode} onChange={setInputCode} />
+              <CodeEditor label="Source Ingestion" value={inputCode} onChange={setInputCode} />
               <CodeEditor 
-                label="Recovered Logic" 
+                label="Forensic Artifact" 
                 value={getCurrentCode()} 
                 readOnly 
                 actions={getCurrentCode() ? (
@@ -424,10 +425,10 @@ const App: React.FC = () => {
                 <header className="flex justify-between items-end border-b border-white/10 pb-8 print:border-black print:pb-6">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-blue-500 text-xs font-bold uppercase tracking-[0.3em] print:text-blue-800">
-                      <ShieldCheck className="w-4 h-4" /> Investigatory Intelligence Phase
+                      <ShieldCheck className="w-4 h-4" /> Cyber Intelligence Phase
                     </div>
-                    <h1 className="text-4xl font-black text-white tracking-tight uppercase print:text-black leading-none">Forensic Intelligence Summary</h1>
-                    <p className="text-[10px] font-mono text-slate-500 uppercase print:text-slate-600">Generated via {aiFactory.getActiveService().name} Core Engine</p>
+                    <h1 className="text-4xl font-black text-white tracking-tight uppercase print:text-black leading-none">Investigatory Summary</h1>
+                    <p className="text-[10px] font-mono text-slate-500 uppercase print:text-slate-600">Engine: {aiFactory.getActiveService().name} [T:0]</p>
                   </div>
                   <div className="flex flex-col items-end gap-3 print:hidden">
                     <div className={`px-5 py-1.5 rounded-full border font-black text-[10px] uppercase tracking-[0.2em] shadow-2xl ${
@@ -438,10 +439,10 @@ const App: React.FC = () => {
                     </div>
                     <div className="flex gap-2">
                       <button onClick={downloadResult} className="flex items-center gap-2 text-[10px] font-bold text-slate-400 hover:text-white bg-blue-600/10 px-3 py-1.5 rounded border border-blue-500/20 active:scale-95">
-                        <Download className="w-3 h-3 text-blue-500" /> Export Source
+                        <Download className="w-3 h-3 text-blue-500" /> Source
                       </button>
                       <button onClick={handlePrint} className="flex items-center gap-2 text-[10px] font-bold text-slate-400 hover:text-white bg-white/5 px-3 py-1.5 rounded border border-white/10 active:scale-95">
-                        <Printer className="w-3 h-3" /> Print Intelligence
+                        <Printer className="w-3 h-3" /> Print
                       </button>
                     </div>
                   </div>
@@ -450,7 +451,7 @@ const App: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 print:grid-cols-1 print:gap-8">
                   <section className="space-y-4 print:break-inside-avoid">
                     <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 print:text-black print:border-b print:pb-1">
-                      <LayoutGrid className="w-3.5 h-3.5 text-blue-500" /> Operational Assessment
+                      <LayoutGrid className="w-3.5 h-3.5 text-blue-500" /> Behavioral Assessment
                     </h2>
                     <p className="text-slate-300 text-sm leading-relaxed bg-white/[0.02] p-6 rounded-xl border border-white/5 print:bg-slate-50 print:text-black print:border-slate-200 print:p-4">
                       {analysis.attackVector}
@@ -458,7 +459,7 @@ const App: React.FC = () => {
                   </section>
                   <section className="space-y-4 print:break-inside-avoid">
                     <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 print:text-black print:border-b print:pb-1">
-                      <ShieldAlert className="w-3.5 h-3.5 text-red-500" /> Compromise Impact
+                      <ShieldAlert className="w-3.5 h-3.5 text-red-500" /> Observed Impacts
                     </h2>
                     <div className="grid grid-cols-1 gap-2">
                       {analysis.impacts.map((impact, i) => (
@@ -473,7 +474,7 @@ const App: React.FC = () => {
 
                 <section className="space-y-4 print:break-inside-avoid">
                   <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 print:text-black print:border-b print:pb-1">
-                    <History className="w-3.5 h-3.5 text-purple-500" /> Kill Chain Reconstruction
+                    <History className="w-3.5 h-3.5 text-purple-500" /> Kill Chain Analysis
                   </h2>
                   <div className="space-y-3 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-px before:bg-white/5 print:before:bg-slate-200">
                     {analysis.flowDescription.map((step, i) => (
@@ -491,7 +492,7 @@ const App: React.FC = () => {
 
                 <section className="space-y-4 print:break-inside-avoid">
                   <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 print:text-black print:border-b print:pb-1">
-                    <SearchCode className="w-3.5 h-3.5 text-green-500" /> Extracted IoC Library
+                    <SearchCode className="w-3.5 h-3.5 text-green-500" /> Indicator Repository
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-1">
                     {analysis.ioCs.map((ioc, i) => (
@@ -508,13 +509,13 @@ const App: React.FC = () => {
 
                 <section className="space-y-4 print:break-inside-avoid">
                   <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2 print:text-black print:border-b print:pb-1">
-                    <Bug className="w-3.5 h-3.5 text-orange-500" /> Behavioral Signatures (YARA)
+                    <Bug className="w-3.5 h-3.5 text-orange-500" /> Detection Signatures
                   </h2>
                   <div className="space-y-6">
                     {analysis.detectionRules.map((rule, i) => (
                       <div key={i} className="bg-[#08080a] rounded-2xl border border-white/5 overflow-hidden print:border-slate-300">
                         <div className="px-4 py-2 border-b border-white/5 bg-white/[0.02] flex justify-between items-center print:bg-slate-50">
-                          <span className="text-[9px] font-black text-orange-500 tracking-[0.2em]">{rule.type} SPECIFICATION</span>
+                          <span className="text-[9px] font-black text-orange-500 tracking-[0.2em]">{rule.type} BLOCK</span>
                         </div>
                         <div className="p-6 print:p-4">
                            <p className="text-[10px] text-slate-500 mb-4 italic leading-relaxed print:text-slate-700">"{rule.description}"</p>
@@ -528,7 +529,7 @@ const App: React.FC = () => {
                 </section>
                 
                 <footer className="pt-10 border-t border-white/5 text-center hidden print:block">
-                  <p className="text-[8px] text-slate-400 uppercase tracking-[0.4em]">Confidential Forensic Data // DFIR Laboratory Intelligence System</p>
+                  <p className="text-[8px] text-slate-400 uppercase tracking-[0.4em]">Confidential Forensic Intelligence // Generated via DFIR Kernel</p>
                 </footer>
               </div>
             </div>
@@ -536,11 +537,11 @@ const App: React.FC = () => {
             <div className="h-full flex flex-col items-center justify-center text-slate-800 gap-6 opacity-30 print:hidden">
                <div className="relative">
                   <div className="absolute inset-0 bg-blue-500/20 blur-3xl animate-pulse rounded-full" />
-                  <SearchCode className="w-20 h-20 relative animate-pulse text-slate-600" />
+                  <Target className="w-20 h-20 relative animate-pulse text-slate-600" />
                </div>
                <div className="text-center">
-                 <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-slate-400">System Standby</p>
-                 <p className="text-xs mt-2 font-medium">Ingest malicious source to initiate automated intelligence gathering</p>
+                 <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-slate-400">Lab Idle</p>
+                 <p className="text-xs mt-2 font-medium">Ingest payload to initiate forensic logic reconstruction</p>
                </div>
             </div>
           )}
@@ -555,7 +556,7 @@ const App: React.FC = () => {
             <header className="px-6 h-14 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
               <div className="flex items-center gap-3">
                 <BookOpen className="w-5 h-5 text-blue-500" />
-                <h2 className="text-sm font-black uppercase tracking-widest text-white">Laboratory SOP / Manual</h2>
+                <h2 className="text-sm font-black uppercase tracking-widest text-white">Laboratory Standard Operating Procedure</h2>
               </div>
               <button onClick={() => setShowManual(false)} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
                 <X className="w-5 h-5" />
@@ -564,64 +565,58 @@ const App: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-8 space-y-10 scrollbar-thin scrollbar-thumb-slate-800 text-sm leading-relaxed text-slate-400">
               <section className="space-y-4">
                 <div className="flex items-center gap-2 text-white font-bold uppercase text-[11px] tracking-widest">
-                  <Info className="w-4 h-4 text-blue-500" /> System Overview
+                  <Info className="w-4 h-4 text-blue-500" /> Functional Overview
                 </div>
                 <p>
-                  Welcome to DFIR Labs. This platform is designed for specialized **Digital Forensics and Incident Response (DFIR)** professionals. Our system leverages advanced AI Reasoning Models to deconstruct heavily obfuscated JavaScript payloads typically used in phishing, data harvesting, and C2 exfiltration.
+                  DFIR Kernel is a specialized environment for high-determinism deobfuscation. Unlike general-purpose AI chat interfaces, this kernel uses a structured 7-phase pipeline designed to extract provable logic from polymorphic and VM-obfuscated scripts.
                 </p>
               </section>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <section className="space-y-4">
                   <div className="flex items-center gap-2 text-white font-bold uppercase text-[11px] tracking-widest">
-                    <Workflow className="w-4 h-4 text-purple-500" /> The Analysis Pipeline
+                    <Workflow className="w-4 h-4 text-purple-500" /> Operational Protocol
                   </div>
                   <ul className="space-y-3">
                     <li className="flex gap-3">
                       <span className="font-mono text-blue-500">01</span>
-                      <span>**Stabilization**: Normalizes structure and formatting.</span>
+                      <span>**Stabilization**: Resets whitespace/bracing for AST parity.</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="font-mono text-blue-500">02</span>
-                      <span>**Decoding**: Static reversal of Hex and Base64 literals.</span>
+                      <span>**Expansion**: Resolves string pool rotations statically.</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="font-mono text-blue-500">03</span>
-                      <span>**De-Virtualization**: Unpacks VM-based interpreters.</span>
+                      <span>**Recovery**: Maps Opcodes back to linear logic handlers.</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="font-mono text-blue-500">04</span>
-                      <span>**Inlining**: Resolves proxy functions and indirect calls.</span>
+                      <span>**Inlining**: Replaces proxy functions with actual calls.</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="font-mono text-blue-500">05</span>
-                      <span>**Intelligence**: Final behavioral profiling and IoC extraction.</span>
+                      <span>**Reconstruction**: Renames based on observed API patterns.</span>
                     </li>
                   </ul>
                 </section>
 
                 <section className="space-y-4">
                   <div className="flex items-center gap-2 text-white font-bold uppercase text-[11px] tracking-widest">
-                    <Zap className="w-4 h-4 text-orange-500" /> Engine Protocols
+                    <Zap className="w-4 h-4 text-orange-500" /> Engine Selection [T:0]
                   </div>
                   <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 space-y-4">
                     <div>
                       <div className="flex items-center gap-2 text-slate-200 font-bold text-xs mb-1">
                         <Cpu className="w-3.5 h-3.5" /> Gemini 3 Pro
                       </div>
-                      <p className="text-xs">Highest reasoning accuracy. Recommended for complex polymorphic payloads.</p>
+                      <p className="text-xs">Highest precision for VM-based logic. Best for multi-layered obfuscation.</p>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 text-slate-200 font-bold text-xs mb-1">
                         <Zap className="w-3.5 h-3.5 text-yellow-500" /> Gemini 3 Flash
                       </div>
-                      <p className="text-xs">Fastest execution. Ideal for standard obfuscation and large scripts.</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 text-slate-200 font-bold text-xs mb-1">
-                        <Brain className="w-3.5 h-3.5 text-purple-400" /> GPT-4o
-                      </div>
-                      <p className="text-xs">Balanced semantic understanding and clean code refactoring.</p>
+                      <p className="text-xs">Optimized for throughput. Use for generic string-pool based payloads.</p>
                     </div>
                   </div>
                 </section>
@@ -629,29 +624,29 @@ const App: React.FC = () => {
 
               <section className="space-y-4">
                 <div className="flex items-center gap-2 text-white font-bold uppercase text-[11px] tracking-widest">
-                  <ShieldCheck className="w-4 h-4 text-green-500" /> Best Practices
+                  <ShieldCheck className="w-4 h-4 text-green-500" /> Forensic Integrity
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Safe Ingestion</div>
-                    <p className="text-[11px]">Upload payloads as text or JS files directly. All processing is isolated.</p>
+                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Deterministic</div>
+                    <p className="text-[11px]">Temperature is set to 0.0 to ensure repeatable and consistent output.</p>
                   </div>
                   <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Refine Twice</div>
-                    <p className="text-[11px]">Use the "Enhance Output" button to iterate on variable naming for clarity.</p>
+                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Evidence-Based</div>
+                    <p className="text-[11px]">Identifier renaming is strictly mapped to observed API behavior.</p>
                   </div>
                   <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Export Findings</div>
-                    <p className="text-[11px]">Always download the Intelligence Report for institutional record keeping.</p>
+                    <div className="text-xs font-bold text-slate-200 mb-2 uppercase tracking-tighter">Structured Intel</div>
+                    <p className="text-[11px]">IoC extraction is cross-referenced between AI and regex scanners.</p>
                   </div>
                 </div>
               </section>
 
               <footer className="pt-6 border-t border-white/5 flex justify-between items-center text-[10px] uppercase tracking-widest">
-                <span className="text-slate-600">Document Rev: 2024.11.02</span>
-                <a href="https://github.com" target="_blank" className="flex items-center gap-1.5 text-blue-500 hover:text-blue-400">
-                  Technical Documentation <ExternalLink className="w-3 h-3" />
-                </a>
+                <span className="text-slate-600">Lab Kernel Version: 4.2.1-DET</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-blue-500/50">Forensic Pipeline OK</span>
+                </div>
               </footer>
             </div>
           </div>
@@ -665,16 +660,15 @@ const App: React.FC = () => {
             ENGINE_KRNL_V4.2_ONLINE
           </div>
           <div className="flex items-center gap-2 uppercase">
-            ACTIVE_INTEL: {aiFactory.getActiveService().id.toUpperCase()}
+            ACTIVE_INTEL: {aiFactory.getActiveService().id.toUpperCase()} [T:0.0]
           </div>
         </div>
         <div className="hidden sm:flex gap-6 uppercase">
-          <span>LATENCY: 12ms</span>
-          <span>© 2024 DFIR INTEL COMMAND</span>
+          <span>PIPELINE: DETERMINISTIC</span>
+          <span>© 2024 DFIR LABS KERNEL</span>
         </div>
       </footer>
 
-      {/* Global Print Overrides */}
       <style>{`
         @media print {
           @page { margin: 1.5cm; }
