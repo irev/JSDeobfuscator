@@ -1,90 +1,29 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { DeobfuscationStep } from "../types";
+import { AIService, STEP_PROMPTS } from "./aiService";
 
-export class GeminiService {
+export class GeminiService implements AIService {
   private ai: GoogleGenAI;
+  public name: string;
+  public id: string;
+  private model: string;
 
-  constructor() {
-    // Fix: Use process.env.API_KEY directly without fallback as per @google/genai guidelines
-    this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  constructor(id: string, name: string, model: string) {
+    this.ai = new GoogleGenAI({ apiKey: (process as any).env.API_KEY });
+    this.id = id;
+    this.name = name;
+    this.model = model;
   }
 
   async processStep(step: DeobfuscationStep, code: string): Promise<string> {
-    const modelName = 'gemini-3-pro-preview';
-    let prompt = '';
+    const prompt = STEP_PROMPTS[step] ? STEP_PROMPTS[step](code) : code;
 
-    switch (step) {
-      case DeobfuscationStep.DECOMPILE:
-        prompt = `You are a World-Class Reverse Engineer. 
-        TASK: DE-VIRTUALIZE AND DECOMPILE.
-        The provided JavaScript is likely a Virtual Machine (VM) or complex interpreter-based obfuscation.
-        1. Identify the bytecode array, the dispatcher, and the instruction set.
-        2. Translate the operations back into human-readable high-level JavaScript logic.
-        3. Remove the entire VM infrastructure.
-        4. Focus on recovering the core intent (exfiltration, harvesting, etc.).
-        
-        CODE:
-        ${code}`;
-        break;
-
-      case DeobfuscationStep.REFERENCE_RESOLVE:
-        prompt = `Analyze the JavaScript code for proxy functions, string pools, and property masking.
-        1. Inline all calculated string references.
-        2. Resolve constant folding.
-        3. Replace indirect function calls with their direct counterparts.
-        Return ONLY the resolved ES6 code.
-        
-        CODE:
-        ${code}`;
-        break;
-
-      case DeobfuscationStep.SEMANTIC_CLEANUP:
-        prompt = `Perform a semantic refactor of this deobfuscated JavaScript:
-        1. Identify the purpose of every function and variable.
-        2. Rename them to descriptive names (e.g., 'sendCredentialsToTelegram', 'targetURL').
-        3. Standardize the code structure using clean ES6+.
-        Return ONLY the clean refactored code.
-        
-        CODE:
-        ${code}`;
-        break;
-
-      case DeobfuscationStep.REFINE:
-        prompt = `Final Polish for Forensic Review.
-        1. Simplify control flows.
-        2. Refine variable names based on technical flow.
-        3. Ensure specific malicious endpoints (e.g., Telegram Bot API) are clearly visible and commented.
-        
-        CODE:
-        ${code}`;
-        break;
-
-      case DeobfuscationStep.ANALYZE:
-        prompt = `Perform a Digital Forensics (DFIR) analysis on this deobfuscated script.
-        Produce a JSON response with these exact keys:
-        - attackVector (string): Technical summary.
-        - impacts (string array): List of harmful activities.
-        - ioCs (array of {type, value, context}): Indicators with context.
-        - flowDescription (string array): Ordered steps of execution.
-        - threatLevel (string): "low", "medium", "high", or "critical".
-        - detectionRules (array of {type: "YARA"|"Sigma", content: string, description: string}): Generate specific YARA/Sigma rules to detect THIS specific variant.
-        - remediationSteps (string array): Steps for incident responders.
-
-        CODE:
-        ${code}`;
-        break;
-
-      default:
-        return code;
-    }
-
-    // Fix: Use responseSchema for the ANALYZE step to ensure high-quality JSON output
     const response = await this.ai.models.generateContent({
-      model: modelName,
+      model: this.model,
       contents: prompt,
       config: {
-        thinkingConfig: { thinkingBudget: 8192 },
+        thinkingConfig: this.model.includes('pro') ? { thinkingBudget: 8192 } : undefined,
         responseMimeType: step === DeobfuscationStep.ANALYZE ? "application/json" : "text/plain",
         responseSchema: step === DeobfuscationStep.ANALYZE ? {
           type: Type.OBJECT,
@@ -127,5 +66,3 @@ export class GeminiService {
     return response.text || '';
   }
 }
-
-export const gemini = new GeminiService();
