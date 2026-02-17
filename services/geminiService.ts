@@ -23,13 +23,21 @@ export class GeminiService implements AIService {
       model: this.model,
       contents: prompt,
       config: {
-        // Set temperature to 0 for maximum determinism
         temperature: 0,
         thinkingConfig: this.model.includes('pro') ? { thinkingBudget: 8192 } : undefined,
         responseMimeType: step === DeobfuscationStep.ANALYZE ? "application/json" : "text/plain",
         responseSchema: step === DeobfuscationStep.ANALYZE ? {
           type: Type.OBJECT,
           properties: {
+            classification: {
+              type: Type.OBJECT,
+              properties: {
+                kitName: { type: Type.STRING },
+                confidence: { type: Type.NUMBER },
+                family: { type: Type.STRING }
+              },
+              required: ["kitName", "confidence", "family"]
+            },
             attackVector: { type: Type.STRING },
             impacts: { type: Type.ARRAY, items: { type: Type.STRING } },
             ioCs: {
@@ -60,12 +68,11 @@ export class GeminiService implements AIService {
             },
             remediationSteps: { type: Type.ARRAY, items: { type: Type.STRING } }
           },
-          required: ["attackVector", "impacts", "ioCs", "flowDescription", "threatLevel", "detectionRules", "remediationSteps"]
+          required: ["classification", "attackVector", "impacts", "ioCs", "flowDescription", "threatLevel", "detectionRules", "remediationSteps"]
         } : undefined
       }
     });
 
-    // Handle possible markdown blocks in text-only output
     let text = response.text || '';
     if (step !== DeobfuscationStep.ANALYZE) {
       text = text.replace(/```javascript/g, '').replace(/```js/g, '').replace(/```/g, '').trim();

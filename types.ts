@@ -18,12 +18,17 @@ export interface TransformationResult {
 }
 
 export interface DetectionRule {
-  type: 'YARA' | 'Sigma';
+  type: 'YARA' | 'Sigma' | 'IDS';
   content: string;
   description: string;
 }
 
 export interface AnalysisSummary {
+  classification: {
+    kitName: string;
+    confidence: number;
+    family: string;
+  };
   attackVector: string;
   impacts: string[];
   ioCs: { type: string; value: string; context?: string }[];

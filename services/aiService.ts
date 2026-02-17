@@ -40,12 +40,9 @@ ${code}`,
 ### OBJECTIVE: EVIDENCE-BASED IDENTIFIER RECONSTRUCTION
 
 ### MANDATORY CONSTRAINTS:
-1. NON-HALUCINATORY NAMING: Use names derived ONLY from observed API interactions. 
-   - If a function calls 'fetch' to a specific URL, rename it to reflect that specific destination.
-   - If a variable stores 'document.cookie', name it accordingly.
-   - Do NOT use generic names like 'maliciousFunction' unless specific evidence confirms it.
-2. CONTROL FLOW SIMPLIFICATION: Remove unreachable 'if(false)' blocks and empty 'try/catch' wrappers used for anti-analysis.
-3. CODE MODERNIZATION: Convert indirect property access to dot notation where possible (e.g., window['location'] -> window.location).
+1. NON-HALUCINATORY NAMING: Use names derived ONLY from observed API interactions (e.g., fetch, XMLHttpRequest, Telegram API).
+2. CONTROL FLOW SIMPLIFICATION: Remove unreachable code used for anti-analysis.
+3. CODE MODERNIZATION: Convert indirect property access to dot notation.
 4. OUTPUT: Strictly valid ES6 JavaScript.
 
 ### INPUT SOURCE:
@@ -55,24 +52,24 @@ ${code}`,
 ### OBJECTIVE: FINAL LOGIC POLISH & ANNOTATION
 
 ### MANDATORY CONSTRAINTS:
-1. COMMENTARY: Add JSDoc-style comments to functions describing their inputs and outputs based on observed data flow.
+1. COMMENTARY: Add JSDoc-style comments to functions describing their inputs and outputs.
 2. IOC HIGHLIGHTING: Add '// [!] IOC' comments next to IP addresses, URLs, and File System operations.
-3. DATA FLOW TRACING: Ensure variables that carry sensitive data (credentials, cookies, environment variables) are clearly traceable.
-4. OUTPUT: Strictly valid ES6 JavaScript with forensic annotations.
+3. OUTPUT: Strictly valid ES6 JavaScript with forensic annotations.
 
 ### INPUT SOURCE:
 ${code}`,
 
   [DeobfuscationStep.ANALYZE]: (code: string) => `### ROLE: DFIR INTELLIGENCE AGENT
-### OBJECTIVE: STRUCTURED MALWARE DISSECTION
+### OBJECTIVE: STRUCTURED MALWARE DISSECTION & KIT CLASSIFICATION
 
 ### MANDATORY CONSTRAINTS:
-1. IOC EXTRACTION: Extract every URL, IP, Domain, and Cryptographic Hash.
-2. ATTACK CHAIN: Define the chronological execution flow from entry point to exfiltration.
-3. DETECTION STRATEGY: 
-   - Provide a YARA rule focusing on unique string constants or byte sequences.
-   - Provide a Sigma rule for behavioral detection (e.g., suspicious fetch patterns).
-4. JSON OUTPUT: You must respond ONLY with a valid JSON object matching the requested schema.
+1. KIT CLASSIFICATION: Identify the malware family or kit name based on variable patterns (e.g., r3xdev, Jigsaw, etc.).
+2. IOC EXTRACTION: Extract every URL, IP, Domain, and Cryptographic Hash.
+3. ATTACK CHAIN: Define the chronological execution flow.
+4. DETECTION STRATEGY: 
+   - Provide a YARA rule for static detection.
+   - Provide a Sigma or IDS rule for behavioral network detection.
+5. JSON OUTPUT: Respond ONLY with a valid JSON object matching the schema.
 
 ### INPUT SOURCE:
 ${code}`
